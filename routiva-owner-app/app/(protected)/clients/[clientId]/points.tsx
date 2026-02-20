@@ -139,7 +139,7 @@ export default function ClientPointsScreen() {
         keyboardShouldPersistTaps="handled">
         <Pressable
           className="h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white"
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/clients'))}>
+          onPress={() => router.replace('/clients')}>
           <Ionicons name="chevron-back" size={20} color="#0f172a" />
         </Pressable>
         <View className="gap-1">

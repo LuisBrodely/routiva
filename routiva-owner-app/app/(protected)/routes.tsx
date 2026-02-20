@@ -138,6 +138,12 @@ export default function RoutesScreen() {
         <Button variant="outline" className="h-11 rounded-xl" onPress={() => router.push('/vendors')}>
           <Text>Gestionar vendedores</Text>
         </Button>
+        <Button variant="outline" className="h-11 rounded-xl" onPress={() => router.push('/incidences')}>
+          <Text>Incidencias</Text>
+        </Button>
+        <Button variant="outline" className="h-11 rounded-xl" onPress={() => router.push('/visits')}>
+          <Text>Visitas</Text>
+        </Button>
 
         {isLoading ? (
           <View className="items-center py-8">

@@ -91,18 +91,32 @@ export default function ProtectedLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="vendors"
         options={{
-          title: 'Perfil',
+          title: 'Vendedores',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
+            <Ionicons name={focused ? 'person-add' : 'person-add-outline'} size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="vendors"
+        name="tracking"
         options={{
-          title: 'Vendedores',
+          title: 'Rastreo',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="incidences"
+        options={{
+          title: 'Incidencias',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="visits"
+        options={{
+          title: 'Visitas',
           href: null,
         }}
       />

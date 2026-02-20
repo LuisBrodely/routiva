@@ -40,6 +40,7 @@ import {
 import { vendorSchema, type VendorFormInput } from '@/features/vendors/schemas/vendor-schema';
 import { useSessionStore } from '@/store/session-store';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { ActivityIndicator, Keyboard, Linking, Platform, ScrollView, TouchableWithoutFeedback, View } from 'react-native';
@@ -57,6 +58,7 @@ function formatDate(value: string | null): string {
 }
 
 export default function VendorsScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const contentInsets = {
     top: insets.top,
@@ -157,6 +159,9 @@ export default function VendorsScreen() {
 
         <Button className="h-11 rounded-xl" onPress={openCreateDialog} disabled={!empresaId}>
           <Text>Nuevo vendedor</Text>
+        </Button>
+        <Button variant="outline" className="h-11 rounded-xl" onPress={() => router.push('/tracking')}>
+          <Text>Ver rastreo</Text>
         </Button>
 
         {isLoading ? (

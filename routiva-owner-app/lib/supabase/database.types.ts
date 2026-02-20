@@ -91,6 +91,38 @@ export interface Database {
           ultima_conexion?: string | null;
         };
       };
+      ubicaciones_vendedores: {
+        Row: {
+          id: string;
+          empresa_id: string;
+          vendedor_id: string;
+          latitud: number;
+          longitud: number;
+          precision_metros: number | null;
+          velocidad_kmh: number | null;
+          bateria_porcentaje: number | null;
+          fecha_hora: string;
+        };
+        Insert: {
+          id?: string;
+          empresa_id: string;
+          vendedor_id: string;
+          latitud: number;
+          longitud: number;
+          precision_metros?: number | null;
+          velocidad_kmh?: number | null;
+          bateria_porcentaje?: number | null;
+          fecha_hora?: string;
+        };
+        Update: {
+          latitud?: number;
+          longitud?: number;
+          precision_metros?: number | null;
+          velocidad_kmh?: number | null;
+          bateria_porcentaje?: number | null;
+          fecha_hora?: string;
+        };
+      };
       clientes: {
         Row: {
           id: string;
@@ -351,6 +383,75 @@ export interface Database {
           estatus_visita?: 'PENDIENTE' | 'VISITADO' | 'NO_VISITADO';
           pedido_id?: string | null;
           incidencia_id?: string | null;
+        };
+      };
+      visitas: {
+        Row: {
+          id: string;
+          empresa_id: string;
+          ruta_parada_id: string;
+          vendedor_id: string;
+          latitud_llegada: number | null;
+          longitud_llegada: number | null;
+          fecha_llegada: string | null;
+          latitud_salida: number | null;
+          longitud_salida: number | null;
+          fecha_salida: string | null;
+          resultado: 'PEDIDO' | 'NO_ESTABA' | 'NO_QUISO' | 'CERRADO' | 'OTRO';
+          notas: string | null;
+        };
+        Insert: {
+          id?: string;
+          empresa_id: string;
+          ruta_parada_id: string;
+          vendedor_id: string;
+          latitud_llegada?: number | null;
+          longitud_llegada?: number | null;
+          fecha_llegada?: string | null;
+          latitud_salida?: number | null;
+          longitud_salida?: number | null;
+          fecha_salida?: string | null;
+          resultado: 'PEDIDO' | 'NO_ESTABA' | 'NO_QUISO' | 'CERRADO' | 'OTRO';
+          notas?: string | null;
+        };
+        Update: {
+          ruta_parada_id?: string;
+          vendedor_id?: string;
+          latitud_llegada?: number | null;
+          longitud_llegada?: number | null;
+          fecha_llegada?: string | null;
+          latitud_salida?: number | null;
+          longitud_salida?: number | null;
+          fecha_salida?: string | null;
+          resultado?: 'PEDIDO' | 'NO_ESTABA' | 'NO_QUISO' | 'CERRADO' | 'OTRO';
+          notas?: string | null;
+        };
+      };
+      incidencias: {
+        Row: {
+          id: string;
+          empresa_id: string;
+          cliente_id: string;
+          vendedor_id: string;
+          tipo: 'CLIENTE_CERRADO' | 'CLIENTE_NO_ESTABA' | 'PROBLEMA_PAGO' | 'OTRO';
+          descripcion: string | null;
+          fecha: string;
+        };
+        Insert: {
+          id?: string;
+          empresa_id: string;
+          cliente_id: string;
+          vendedor_id: string;
+          tipo: 'CLIENTE_CERRADO' | 'CLIENTE_NO_ESTABA' | 'PROBLEMA_PAGO' | 'OTRO';
+          descripcion?: string | null;
+          fecha?: string;
+        };
+        Update: {
+          cliente_id?: string;
+          vendedor_id?: string;
+          tipo?: 'CLIENTE_CERRADO' | 'CLIENTE_NO_ESTABA' | 'PROBLEMA_PAGO' | 'OTRO';
+          descripcion?: string | null;
+          fecha?: string;
         };
       };
     };
