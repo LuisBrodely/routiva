@@ -55,7 +55,7 @@ export default function ClientsScreen() {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<ClientFormInput>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
@@ -235,7 +235,7 @@ export default function ClientsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="Cliente SA de CV" />
                 )}
               />
-              {errors.nombreCompleto ? (
+              {submitCount > 0 && errors.nombreCompleto ? (
                 <Text className="text-destructive">{errors.nombreCompleto.message}</Text>
               ) : null}
             </View>
@@ -249,7 +249,7 @@ export default function ClientsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="5551234567" />
                 )}
               />
-              {errors.telefono ? <Text className="text-destructive">{errors.telefono.message}</Text> : null}
+              {submitCount > 0 && errors.telefono ? <Text className="text-destructive">{errors.telefono.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -261,7 +261,7 @@ export default function ClientsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="XAXX010101000" />
                 )}
               />
-              {errors.rfc ? <Text className="text-destructive">{errors.rfc.message}</Text> : null}
+              {submitCount > 0 && errors.rfc ? <Text className="text-destructive">{errors.rfc.message}</Text> : null}
             </View>
 
             {createClientMutation.error ? (

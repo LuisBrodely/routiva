@@ -83,7 +83,7 @@ export default function RoutesScreen() {
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<RouteFormInput>({
     resolver: zodResolver(routeSchema),
     defaultValues: {
@@ -232,7 +232,7 @@ export default function RoutesScreen() {
                     </Select>
                   )}
                 />
-                {errors.vendedorId ? <Text className="text-destructive">{errors.vendedorId.message}</Text> : null}
+                {submitCount > 0 && errors.vendedorId ? <Text className="text-destructive">{errors.vendedorId.message}</Text> : null}
               </View>
 
               <View className="gap-1">
@@ -244,7 +244,7 @@ export default function RoutesScreen() {
                     <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="YYYY-MM-DD" />
                   )}
                 />
-                {errors.fecha ? <Text className="text-destructive">{errors.fecha.message}</Text> : null}
+                {submitCount > 0 && errors.fecha ? <Text className="text-destructive">{errors.fecha.message}</Text> : null}
               </View>
 
               <View className="gap-3">
@@ -370,11 +370,11 @@ export default function RoutesScreen() {
                           </Button>
                         ) : null}
 
-                        {errors.stops?.[index]?.clienteId ? (
-                          <Text className="text-destructive">{errors.stops[index]?.clienteId?.message}</Text>
+                        {submitCount > 0 && errors.stops?.[index]?.clienteId ? (
+                          <Text className="text-destructive">{submitCount > 0 && errors.stops[index]?.clienteId?.message}</Text>
                         ) : null}
-                        {errors.stops?.[index]?.puntoVentaId ? (
-                          <Text className="text-destructive">{errors.stops[index]?.puntoVentaId?.message}</Text>
+                        {submitCount > 0 && errors.stops?.[index]?.puntoVentaId ? (
+                          <Text className="text-destructive">{submitCount > 0 && errors.stops[index]?.puntoVentaId?.message}</Text>
                         ) : null}
                       </View>
                     </View>

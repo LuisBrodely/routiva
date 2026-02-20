@@ -95,7 +95,7 @@ export default function InventoryScreen() {
     watch,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<InventoryMovementFormInput>({
     resolver: zodResolver(inventoryMovementSchema),
     defaultValues: {
@@ -258,7 +258,7 @@ export default function InventoryScreen() {
                     </Select>
                   )}
                 />
-                {errors.productoId ? <Text className="text-destructive">{errors.productoId.message}</Text> : null}
+                {submitCount > 0 && errors.productoId ? <Text className="text-destructive">{errors.productoId.message}</Text> : null}
               </View>
 
               <View className="gap-1">
@@ -286,7 +286,7 @@ export default function InventoryScreen() {
                     </Select>
                   )}
                 />
-                {errors.tipo ? <Text className="text-destructive">{errors.tipo.message}</Text> : null}
+                {submitCount > 0 && errors.tipo ? <Text className="text-destructive">{errors.tipo.message}</Text> : null}
               </View>
 
               <View className="gap-1">
@@ -304,7 +304,7 @@ export default function InventoryScreen() {
                     />
                   )}
                 />
-                {errors.cantidad ? <Text className="text-destructive">{errors.cantidad.message}</Text> : null}
+                {submitCount > 0 && errors.cantidad ? <Text className="text-destructive">{errors.cantidad.message}</Text> : null}
               </View>
 
               {createMovementMutation.error ? (

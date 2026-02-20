@@ -84,7 +84,7 @@ export default function VendorsScreen() {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<VendorFormInput>({
     resolver: zodResolver(vendorSchema),
     defaultValues: {
@@ -248,35 +248,58 @@ export default function VendorsScreen() {
                 <Controller
                   control={control}
                   name="usuarioId"
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      value={
-                        value
-                          ? {
-                              value,
-                              label: (sellerUsers ?? []).find((item) => item.id === value)?.username ?? 'Usuario',
-                            }
-                          : undefined
-                      }
-                      onValueChange={(option) => onChange(option?.value ?? '')}
-                      disabled={Boolean(editingVendor)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona usuario" />
-                      </SelectTrigger>
-                      <SelectContent insets={contentInsets}>
-                        <SelectGroup>
-                          <SelectLabel>Usuarios SELLER</SelectLabel>
-                          {(sellerUsers ?? []).map((item) => (
-                            <SelectItem key={item.id} label={item.username} value={item.id}>
-                              {item.username}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  )}
+                  render={({ field: { onChange, value } }) =>
+                    editingVendor ? (
+                      <Input
+                        value={
+                          (sellerUsers ?? []).find((item) => item.id === value)?.username ??
+                          editingVendor.usuarioId.slice(0, 8)
+                        }
+                        editable={false}
+                        aria-disabled
+                      />
+                    ) : (
+                      <Select
+                        value={
+                          value
+                            ? {
+                                value,
+                                label: (sellerUsers ?? []).find((item) => item.id === value)?.username ?? 'Usuario',
+                              }
+                            : undefined
+                        }
+                        onValueChange={(option) => onChange(option?.value ?? '')}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona usuario" />
+                        </SelectTrigger>
+                        <SelectContent insets={contentInsets}>
+                          <SelectGroup>
+                            <SelectLabel>Usuarios SELLER</SelectLabel>
+                            {!(sellerUsers ?? []).length ? (
+                              <SelectItem label="Sin usuarios SELLER" value="__empty__" disabled>
+                                Sin usuarios SELLER
+                              </SelectItem>
+                            ) : null}
+                            {(sellerUsers ?? []).map((item) => (
+                              <SelectItem
+                                key={item.id}
+                                label={item.activo ? item.username : `${item.username} (inactivo)`}
+                                value={item.id}>
+                                {item.activo ? item.username : `${item.username} (inactivo)`}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )
+                  }
                 />
-                {errors.usuarioId ? <Text className="text-destructive">{errors.usuarioId.message}</Text> : null}
+                {submitCount > 0 && errors.usuarioId ? <Text className="text-destructive">{errors.usuarioId.message}</Text> : null}
+                {!editingVendor && !(sellerUsers ?? []).length ? (
+                  <Text className="text-xs text-muted-foreground">
+                    No hay usuarios con rol SELLER en la tabla usuarios para esta empresa.
+                  </Text>
+                ) : null}
               </View>
 
               <View className="gap-1">
@@ -288,7 +311,7 @@ export default function VendorsScreen() {
                     <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="Juan Perez" />
                   )}
                 />
-                {errors.nombreCompleto ? <Text className="text-destructive">{errors.nombreCompleto.message}</Text> : null}
+                {submitCount > 0 && errors.nombreCompleto ? <Text className="text-destructive">{errors.nombreCompleto.message}</Text> : null}
               </View>
 
               <View className="gap-1">

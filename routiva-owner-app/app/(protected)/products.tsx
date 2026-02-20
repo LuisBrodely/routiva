@@ -53,7 +53,7 @@ export default function ProductsScreen() {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<ProductFormInput>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -216,7 +216,7 @@ export default function ProductsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="Refresco 600ml" />
                 )}
               />
-              {errors.nombre ? <Text className="text-destructive">{errors.nombre.message}</Text> : null}
+              {submitCount > 0 && errors.nombre ? <Text className="text-destructive">{errors.nombre.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -228,7 +228,7 @@ export default function ProductsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="pieza" />
                 )}
               />
-              {errors.unidad ? <Text className="text-destructive">{errors.unidad.message}</Text> : null}
+              {submitCount > 0 && errors.unidad ? <Text className="text-destructive">{errors.unidad.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -240,7 +240,7 @@ export default function ProductsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="25.50" />
                 )}
               />
-              {errors.precio ? <Text className="text-destructive">{errors.precio.message}</Text> : null}
+              {submitCount > 0 && errors.precio ? <Text className="text-destructive">{errors.precio.message}</Text> : null}
             </View>
 
             {createProductMutation.error ? (

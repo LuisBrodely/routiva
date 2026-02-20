@@ -16,6 +16,7 @@ export interface VendorItem {
 export interface SellerUserItem {
   id: string;
   username: string;
+  activo: boolean;
 }
 
 interface RawVendor {
@@ -57,17 +58,17 @@ export async function getVendors(empresaId: string): Promise<VendorItem[]> {
 export async function getSellerUsers(empresaId: string): Promise<SellerUserItem[]> {
   const { data, error } = await supabase
     .from('usuarios')
-    .select('id, username')
+    .select('id, username, activo')
     .eq('empresa_id', empresaId)
     .eq('rol', 'SELLER')
-    .eq('activo', true)
     .order('username', { ascending: true });
 
   if (error) throw error;
 
-  return ((data ?? []) as Array<{ id: string; username: string }>).map((item) => ({
+  return ((data ?? []) as Array<{ id: string; username: string; activo: boolean }>).map((item) => ({
     id: item.id,
     username: item.username,
+    activo: item.activo,
   }));
 }
 

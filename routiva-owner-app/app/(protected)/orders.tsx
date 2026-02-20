@@ -90,7 +90,7 @@ export default function OrdersScreen() {
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<OrderFormInput>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
@@ -257,7 +257,7 @@ export default function OrdersScreen() {
                     </Select>
                   )}
                 />
-                {errors.clienteId ? <Text className="text-destructive">{errors.clienteId.message}</Text> : null}
+                {submitCount > 0 && errors.clienteId ? <Text className="text-destructive">{errors.clienteId.message}</Text> : null}
               </View>
 
               <View className="gap-1">
@@ -289,7 +289,7 @@ export default function OrdersScreen() {
                     </Select>
                   )}
                 />
-                {errors.puntoVentaId ? <Text className="text-destructive">{errors.puntoVentaId.message}</Text> : null}
+                {submitCount > 0 && errors.puntoVentaId ? <Text className="text-destructive">{errors.puntoVentaId.message}</Text> : null}
               </View>
 
               <View className="gap-1">
@@ -324,7 +324,7 @@ export default function OrdersScreen() {
                     </Select>
                   )}
                 />
-                {errors.vendedorId ? <Text className="text-destructive">{errors.vendedorId.message}</Text> : null}
+                {submitCount > 0 && errors.vendedorId ? <Text className="text-destructive">{errors.vendedorId.message}</Text> : null}
               </View>
 
               <View className="gap-3">
@@ -383,11 +383,11 @@ export default function OrdersScreen() {
                         </Button>
                       ) : null}
 
-                      {errors.items?.[index]?.productoId ? (
-                        <Text className="text-destructive">{errors.items[index]?.productoId?.message}</Text>
+                      {submitCount > 0 && errors.items?.[index]?.productoId ? (
+                        <Text className="text-destructive">{submitCount > 0 && errors.items[index]?.productoId?.message}</Text>
                       ) : null}
-                      {errors.items?.[index]?.cantidad ? (
-                        <Text className="text-destructive">{errors.items[index]?.cantidad?.message}</Text>
+                      {submitCount > 0 && errors.items?.[index]?.cantidad ? (
+                        <Text className="text-destructive">{submitCount > 0 && errors.items[index]?.cantidad?.message}</Text>
                       ) : null}
                     </View>
                   </View>

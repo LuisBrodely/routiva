@@ -20,6 +20,13 @@ interface RawRouteStop {
   incidencia_id: string | null;
 }
 
+interface RawEvidence {
+  id: string;
+  url: string;
+  tipo: string | null;
+  fecha: string;
+}
+
 export async function getIncidences(empresaId: string): Promise<IncidenceSummary[]> {
   const { data: incidencesData, error: incidencesError } = await (supabase
     .from('incidencias')
@@ -69,6 +76,40 @@ export async function getIncidences(empresaId: string): Promise<IncidenceSummary
     if (stop.incidencia_id) stopByIncidenceId.set(stop.incidencia_id, stop);
   });
 
+  const { data: incidenceFileRows, error: incidenceFileError } = await (supabase
+    .from('incidencias_archivos')
+    .select('incidencia_id, archivo_id')
+    .eq('empresa_id', empresaId)
+    .in('incidencia_id', incidenceIds) as any);
+
+  if (incidenceFileError) throw incidenceFileError;
+
+  const fileLinks = (incidenceFileRows ?? []) as Array<{ incidencia_id: string; archivo_id: string }>;
+  const fileIds = Array.from(new Set(fileLinks.map((item) => item.archivo_id)));
+  const evidenceByFileId = new Map<string, RawEvidence>();
+
+  if (fileIds.length) {
+    const { data: filesData, error: filesError } = await (supabase
+      .from('archivos')
+      .select('id, url, tipo, fecha')
+      .eq('empresa_id', empresaId)
+      .in('id', fileIds) as any);
+    if (filesError) throw filesError;
+
+    ((filesData ?? []) as RawEvidence[]).forEach((file) => {
+      evidenceByFileId.set(file.id, file);
+    });
+  }
+
+  const evidenceByIncidenceId = new Map<string, RawEvidence[]>();
+  fileLinks.forEach((item) => {
+    const evidence = evidenceByFileId.get(item.archivo_id);
+    if (!evidence) return;
+    const current = evidenceByIncidenceId.get(item.incidencia_id) ?? [];
+    current.push(evidence);
+    evidenceByIncidenceId.set(item.incidencia_id, current);
+  });
+
   return incidences.map((incidence) => {
     const stop = stopByIncidenceId.get(incidence.id);
     const pointName = stop ? pointNameById.get(stop.punto_venta_id) ?? 'Punto de venta' : null;
@@ -84,6 +125,8 @@ export async function getIncidences(empresaId: string): Promise<IncidenceSummary
       fecha: incidence.fecha,
       rutaParadaId: stop?.id ?? null,
       paradaResumen: stop ? `Ruta ${stop.ruta_id.slice(0, 6)} • Parada #${stop.orden} • ${pointName}` : null,
+      evidencias: evidenceByIncidenceId.get(incidence.id) ?? [],
+      evidenciasCount: evidenceByIncidenceId.get(incidence.id)?.length ?? 0,
     };
   });
 }

@@ -18,11 +18,9 @@ export default function IndexScreen() {
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors, submitCount },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
-    mode: 'onChange',
-    reValidateMode: 'onChange',
     defaultValues: {
       email: '',
       password: '',
@@ -77,7 +75,7 @@ export default function IndexScreen() {
                   />
                 )}
               />
-              {errors.email ? <Text className="text-destructive">{errors.email.message}</Text> : null}
+              {submitCount > 0 && errors.email ? <Text className="text-destructive">{errors.email.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -97,13 +95,13 @@ export default function IndexScreen() {
                   />
                 )}
               />
-              {errors.password ? (
+              {submitCount > 0 && errors.password ? (
                 <Text className="text-destructive">{errors.password.message}</Text>
               ) : null}
             </View>
 
             {error ? <Text className="text-destructive">{getErrorMessage(error, 'No se pudo iniciar sesión.')}</Text> : null}
-            <Button disabled={isPending || !isValid} onPress={handleSubmit(onSubmit)}>
+            <Button disabled={isPending} onPress={handleSubmit(onSubmit)}>
               <Text>{isPending ? 'Ingresando...' : 'Iniciar sesión'}</Text>
             </Button>
           </View>

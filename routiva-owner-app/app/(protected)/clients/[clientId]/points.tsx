@@ -63,7 +63,7 @@ export default function ClientPointsScreen() {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<PointOfSaleFormInput>({
     resolver: zodResolver(pointOfSaleSchema),
     defaultValues: {
@@ -260,7 +260,7 @@ export default function ClientPointsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="Sucursal Centro" />
                 )}
               />
-              {errors.nombre ? <Text className="text-destructive">{errors.nombre.message}</Text> : null}
+              {submitCount > 0 && errors.nombre ? <Text className="text-destructive">{errors.nombre.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -272,7 +272,7 @@ export default function ClientPointsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="Av. Siempre Viva 123" />
                 )}
               />
-              {errors.direccion ? <Text className="text-destructive">{errors.direccion.message}</Text> : null}
+              {submitCount > 0 && errors.direccion ? <Text className="text-destructive">{errors.direccion.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -284,7 +284,7 @@ export default function ClientPointsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value ?? ''} placeholder="19.4326" />
                 )}
               />
-              {errors.latitud ? <Text className="text-destructive">{errors.latitud.message}</Text> : null}
+              {submitCount > 0 && errors.latitud ? <Text className="text-destructive">{errors.latitud.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -296,7 +296,7 @@ export default function ClientPointsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value ?? ''} placeholder="-99.1332" />
                 )}
               />
-              {errors.longitud ? <Text className="text-destructive">{errors.longitud.message}</Text> : null}
+              {submitCount > 0 && errors.longitud ? <Text className="text-destructive">{errors.longitud.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -308,7 +308,7 @@ export default function ClientPointsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="L-V 9:00 a 18:00" />
                 )}
               />
-              {errors.horario ? <Text className="text-destructive">{errors.horario.message}</Text> : null}
+              {submitCount > 0 && errors.horario ? <Text className="text-destructive">{errors.horario.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -320,7 +320,7 @@ export default function ClientPointsScreen() {
                   <Input onBlur={onBlur} onChangeText={onChange} value={value} placeholder="Referencias de acceso" />
                 )}
               />
-              {errors.notas ? <Text className="text-destructive">{errors.notas.message}</Text> : null}
+              {submitCount > 0 && errors.notas ? <Text className="text-destructive">{errors.notas.message}</Text> : null}
             </View>
 
             {createPointMutation.error ? (

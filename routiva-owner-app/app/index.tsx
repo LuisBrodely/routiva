@@ -17,7 +17,7 @@ export default function IndexScreen() {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -68,7 +68,7 @@ export default function IndexScreen() {
                   />
                 )}
               />
-              {errors.email ? <Text className="text-destructive">{errors.email.message}</Text> : null}
+              {submitCount > 0 && errors.email ? <Text className="text-destructive">{errors.email.message}</Text> : null}
             </View>
 
             <View className="gap-1">
@@ -87,7 +87,7 @@ export default function IndexScreen() {
                   />
                 )}
               />
-              {errors.password ? (
+              {submitCount > 0 && errors.password ? (
                 <Text className="text-destructive">{errors.password.message}</Text>
               ) : null}
             </View>

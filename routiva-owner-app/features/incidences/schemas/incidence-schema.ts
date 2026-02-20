@@ -31,4 +31,11 @@ export interface IncidenceSummary {
   fecha: string;
   rutaParadaId: string | null;
   paradaResumen: string | null;
+  evidencias: Array<{
+    id: string;
+    url: string;
+    tipo: string | null;
+    fecha: string;
+  }>;
+  evidenciasCount: number;
 }

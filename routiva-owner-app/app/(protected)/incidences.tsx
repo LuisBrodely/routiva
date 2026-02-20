@@ -29,13 +29,14 @@ import { incidenceSchema, type IncidenceFormInput, incidenceTypes } from '@/feat
 import { usePointsOfSaleByEmpresaQuery } from '@/features/points-of-sale/hooks/use-points-of-sale';
 import { useRoutesQuery } from '@/features/routes/hooks/use-routes';
 import { useVendorsQuery } from '@/features/vendors/hooks/use-vendors';
+import { supabase } from '@/lib/supabase/client';
 import { useSessionStore } from '@/store/session-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ActivityIndicator, Keyboard, Platform, Pressable, ScrollView, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Linking, Platform, Pressable, ScrollView, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const incidenceTypeLabel: Record<(typeof incidenceTypes)[number], string> = {
@@ -91,7 +92,7 @@ export default function IncidencesScreen() {
     reset,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<IncidenceFormInput>({
     resolver: zodResolver(incidenceSchema),
     defaultValues: {
@@ -188,6 +189,21 @@ export default function IncidencesScreen() {
     } catch {
       return;
     }
+  }
+
+  async function openEvidence(urlOrPath: string) {
+    if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
+      await Linking.openURL(urlOrPath);
+      return;
+    }
+
+    const { data, error: signedUrlError } = await supabase.storage
+      .from('incidencias-evidencias')
+      .createSignedUrl(urlOrPath, 60 * 10);
+
+    if (signedUrlError) throw signedUrlError;
+    if (!data?.signedUrl) throw new Error('No se pudo generar URL de evidencia');
+    await Linking.openURL(data.signedUrl);
   }
 
   return (
@@ -319,6 +335,12 @@ export default function IncidencesScreen() {
 
             {incidence.paradaResumen ? <Text className="text-muted-foreground">{incidence.paradaResumen}</Text> : null}
             {incidence.descripcion ? <Text className="mt-1 text-muted-foreground">{incidence.descripcion}</Text> : null}
+            <Text className="mt-2 text-xs text-muted-foreground">Evidencias: {incidence.evidenciasCount}</Text>
+            {(incidence.evidencias ?? []).slice(0, 2).map((item) => (
+              <Button key={item.id} variant="outline" className="mt-2" onPress={() => openEvidence(item.url)}>
+                <Text>Abrir evidencia</Text>
+              </Button>
+            ))}
           </View>
         ))}
 
@@ -374,7 +396,7 @@ export default function IncidencesScreen() {
                     </Select>
                   )}
                 />
-                {errors.vendedorId ? <Text className="text-destructive">{errors.vendedorId.message}</Text> : null}
+                {submitCount > 0 && errors.vendedorId ? <Text className="text-destructive">{errors.vendedorId.message}</Text> : null}
               </View>
 
               <View className="gap-1">
@@ -408,7 +430,7 @@ export default function IncidencesScreen() {
                     </Select>
                   )}
                 />
-                {errors.clienteId ? <Text className="text-destructive">{errors.clienteId.message}</Text> : null}
+                {submitCount > 0 && errors.clienteId ? <Text className="text-destructive">{errors.clienteId.message}</Text> : null}
               </View>
 
               <View className="gap-1">
@@ -520,7 +542,7 @@ export default function IncidencesScreen() {
                     />
                   )}
                 />
-                {errors.descripcion ? <Text className="text-destructive">{errors.descripcion.message}</Text> : null}
+                {submitCount > 0 && errors.descripcion ? <Text className="text-destructive">{errors.descripcion.message}</Text> : null}
               </View>
 
               {createIncidenceMutation.error ? (
