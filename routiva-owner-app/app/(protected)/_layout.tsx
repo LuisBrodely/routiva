@@ -100,6 +100,13 @@ export default function ProtectedLayout() {
         }}
       />
       <Tabs.Screen
+        name="vendors"
+        options={{
+          title: 'Vendedores',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="clients/[clientId]/points"
         options={{
           title: 'Puntos de venta',

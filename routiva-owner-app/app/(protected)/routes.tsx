@@ -26,6 +26,7 @@ import { routeSchema, type RouteFormInput } from '@/features/routes/schemas/rout
 import { useVendorsQuery } from '@/features/vendors/hooks/use-vendors';
 import { useSessionStore } from '@/store/session-store';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import {
@@ -53,6 +54,7 @@ function formatDate(value: string): string {
 }
 
 export default function RoutesScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const contentInsets = {
     top: insets.top,
@@ -132,6 +134,9 @@ export default function RoutesScreen() {
 
         <Button className="h-11 rounded-xl" onPress={openCreateDialog} disabled={!empresaId}>
           <Text>Nueva ruta</Text>
+        </Button>
+        <Button variant="outline" className="h-11 rounded-xl" onPress={() => router.push('/vendors')}>
+          <Text>Gestionar vendedores</Text>
         </Button>
 
         {isLoading ? (
