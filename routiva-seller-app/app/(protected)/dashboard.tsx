@@ -60,7 +60,7 @@ export default function SellerDashboardScreen() {
         <View className="gap-1">
           <Text className="text-sm text-slate-500 dark:text-zinc-400">Vendedor</Text>
           <Text variant="large">{vendedorNombre ?? username ?? 'Sin nombre'}</Text>
-          <Text className="text-muted-foreground">{empresaNombre ?? 'Sin empresa'}</Text>
+          <Text className="text-muted-foreground">{empresaNombre ?? (empresaId ? 'Empresa asignada' : 'Sin empresa')}</Text>
         </View>
 
         <View className="flex-row gap-3">
@@ -111,7 +111,9 @@ export default function SellerDashboardScreen() {
           </DialogHeader>
           <View className="mt-2 rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
             <Text className="text-sm font-medium text-foreground">{username ?? 'Sin usuario'}</Text>
-            <Text className="text-xs text-muted-foreground">{vendedorNombre ?? 'Sin vendedor'} • {empresaNombre ?? 'Sin empresa'}</Text>
+            <Text className="text-xs text-muted-foreground">
+              {vendedorNombre ?? 'Sin vendedor'} • {empresaNombre ?? (empresaId ? 'Empresa asignada' : 'Sin empresa')}
+            </Text>
           </View>
           <View className="mt-3 gap-2">
             <Pressable

@@ -38,6 +38,7 @@ import {
   useTodaySellerRouteQuery,
 } from '@/features/seller-route/hooks/use-seller-route';
 import { visitResults, type OrderDraftItem, type SellerRouteStop } from '@/features/seller-route/schemas/route-schema';
+import { pushSellerLocation } from '@/features/seller-tracking/api/seller-tracking-api';
 import {
   usePushSellerLocationMutation,
   useSellerLocationHistoryQuery,
@@ -93,6 +94,14 @@ function parseQty(value: string): number {
   return Math.min(parsed, MAX_ORDER_QTY);
 }
 
+function normalizeLocationError(error: unknown, fallback: string): string {
+  const raw = getErrorMessage(error, fallback);
+  if (raw.includes('NSLocation') || raw.includes('Info.plist')) {
+    return 'Falta configurar permisos de ubicacion iOS. Reinstala la app con build actualizado para aplicar Info.plist.';
+  }
+  return raw;
+}
+
 export default function SellerRouteScreen() {
   const insets = useSafeAreaInsets();
   const contentInsets = {
@@ -112,7 +121,7 @@ export default function SellerRouteScreen() {
     error,
     refetch: refetchRoute,
   } = useTodaySellerRouteQuery(empresaId, vendedorId);
-  const { data: products } = useActiveProductsQuery(empresaId);
+  const { data: products } = useActiveProductsQuery(empresaId, vendedorId);
   const { data: locationHistory } = useSellerLocationHistoryQuery(empresaId, vendedorId);
 
   const pushLocationMutation = usePushSellerLocationMutation(empresaId, vendedorId);
@@ -192,7 +201,8 @@ export default function SellerRouteScreen() {
             if (cancelled || autoTrackingBusyRef.current) return;
             autoTrackingBusyRef.current = true;
             try {
-              await pushLocationMutation.mutateAsync({
+              if (!empresaId || !vendedorId) return;
+              await pushSellerLocation(empresaId, vendedorId, {
                 latitud: position.coords.latitude,
                 longitud: position.coords.longitude,
                 precisionMetros: position.coords.accuracy,
@@ -200,7 +210,7 @@ export default function SellerRouteScreen() {
               });
               setLastTrackedAt(new Date().toISOString());
             } catch (trackingError) {
-              setOperationError(getErrorMessage(trackingError, 'No se pudo enviar la ubicación automática.'));
+              setOperationError(normalizeLocationError(trackingError, 'No se pudo enviar la ubicación automática.'));
             } finally {
               autoTrackingBusyRef.current = false;
             }
@@ -214,7 +224,7 @@ export default function SellerRouteScreen() {
 
         locationWatcherRef.current = subscription;
       } catch (trackingError) {
-        setOperationError(getErrorMessage(trackingError, 'No se pudo iniciar el tracking continuo.'));
+        setOperationError(normalizeLocationError(trackingError, 'No se pudo iniciar el tracking continuo.'));
         setIsContinuousTrackingEnabled(false);
       }
     }
@@ -226,7 +236,7 @@ export default function SellerRouteScreen() {
       locationWatcherRef.current?.remove();
       locationWatcherRef.current = null;
     };
-  }, [isContinuousTrackingEnabled, pushLocationMutation]);
+  }, [empresaId, isContinuousTrackingEnabled, vendedorId]);
 
   async function getCurrentCoords() {
     const permission = await Location.requestForegroundPermissionsAsync();
@@ -251,7 +261,7 @@ export default function SellerRouteScreen() {
       await pushLocationMutation.mutateAsync(coords);
       setLastTrackedAt(new Date().toISOString());
     } catch (pushError) {
-      setOperationError(getErrorMessage(pushError, 'No se pudo actualizar la ubicación.'));
+      setOperationError(normalizeLocationError(pushError, 'No se pudo actualizar la ubicación.'));
     }
   }
 
@@ -267,9 +277,7 @@ export default function SellerRouteScreen() {
       }
       setIsBackgroundTrackingEnabled(nextValue);
     } catch (backgroundTrackingError) {
-      setOperationError(
-        getErrorMessage(backgroundTrackingError, 'No se pudo cambiar el tracking en segundo plano.')
-      );
+      setOperationError(normalizeLocationError(backgroundTrackingError, 'No se pudo cambiar el tracking en segundo plano.'));
       const started = await getBackgroundTrackingStatus();
       setIsBackgroundTrackingEnabled(started);
     } finally {
@@ -285,7 +293,7 @@ export default function SellerRouteScreen() {
       await pushLocationMutation.mutateAsync(coords);
       setLastTrackedAt(new Date().toISOString());
     } catch (checkInError) {
-      setOperationError(getErrorMessage(checkInError, 'No se pudo registrar el check-in.'));
+      setOperationError(normalizeLocationError(checkInError, 'No se pudo registrar el check-in.'));
     }
   }
 
@@ -329,7 +337,7 @@ export default function SellerRouteScreen() {
       setLastTrackedAt(new Date().toISOString());
       resetCheckoutDialog();
     } catch (checkOutError) {
-      setCheckoutError(getErrorMessage(checkOutError, 'No se pudo registrar el check-out.'));
+      setCheckoutError(normalizeLocationError(checkOutError, 'No se pudo registrar el check-out.'));
     }
   }
 
@@ -364,14 +372,36 @@ export default function SellerRouteScreen() {
       return;
     }
 
+    const exceededStock = itemsToSubmit.find((item) => {
+      const product = (products ?? []).find((productItem) => productItem.id === item.productoId);
+      return product ? item.cantidad > product.stockDisponible : false;
+    });
+    if (exceededStock) {
+      const product = (products ?? []).find((productItem) => productItem.id === exceededStock.productoId);
+      setOrderError(`Stock insuficiente para ${product?.nombre ?? 'producto seleccionado'}.`);
+      return;
+    }
+
     setOrderError(null);
     setOperationError(null);
 
     try {
       await createOrderMutation.mutateAsync({ routeStopId: orderStop.id, items: itemsToSubmit });
+      const coords = await getCurrentCoords();
+      await checkOutMutation.mutateAsync({
+        routeStopId: orderStop.id,
+        input: {
+          resultado: 'PEDIDO',
+          notas: 'Venta registrada desde pedido',
+          salida: coords,
+          createIncidence: false,
+        },
+      });
+      await pushLocationMutation.mutateAsync(coords);
+      setLastTrackedAt(new Date().toISOString());
       resetOrderDialog();
     } catch (createOrderError) {
-      setOrderError(getErrorMessage(createOrderError, 'No se pudo guardar el pedido.'));
+      setOrderError(normalizeLocationError(createOrderError, 'No se pudo guardar la venta.'));
     }
   }
 
@@ -594,7 +624,7 @@ export default function SellerRouteScreen() {
                 <Text>Check-out</Text>
               </Button>
               <Button variant="secondary" onPress={() => openOrderDialog(stop)}>
-                <Text>Pedido</Text>
+                <Text>Vender</Text>
               </Button>
               <Button variant="outline" onPress={() => setIncidenceStop(stop)}>
                 <Text>Incidencia</Text>
@@ -683,8 +713,8 @@ export default function SellerRouteScreen() {
         }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nuevo pedido</DialogTitle>
-            <DialogDescription>Captura cantidades por producto.</DialogDescription>
+            <DialogTitle>Registrar venta</DialogTitle>
+            <DialogDescription>Captura cantidades entregadas para descontar inventario.</DialogDescription>
           </DialogHeader>
           <ScrollView className="max-h-[360px]" contentContainerClassName="gap-2 pt-3">
             {(products ?? []).map((product) => {
@@ -692,7 +722,9 @@ export default function SellerRouteScreen() {
               return (
                 <View key={product.id} className="rounded-xl border border-slate-200 p-3 dark:border-zinc-800">
                   <Text className="font-medium text-foreground">{product.nombre}</Text>
-                  <Text className="text-xs text-muted-foreground">${product.precio.toFixed(2)} / {product.unidad}</Text>
+                  <Text className="text-xs text-muted-foreground">
+                    ${product.precio.toFixed(2)} / {product.unidad} • Disponible: {Math.trunc(product.stockDisponible)}
+                  </Text>
                   <Input
                     keyboardType="number-pad"
                     value={qty ? String(qty) : ''}
@@ -709,7 +741,7 @@ export default function SellerRouteScreen() {
               <Text>Cancelar</Text>
             </Button>
             <Button onPress={confirmOrder} disabled={createOrderMutation.isPending}>
-              <Text>{createOrderMutation.isPending ? 'Guardando...' : 'Guardar pedido'}</Text>
+              <Text>{createOrderMutation.isPending ? 'Guardando...' : 'Guardar venta'}</Text>
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -527,7 +527,10 @@ export async function createOrderForStop(
   return order.id as string;
 }
 
-export async function getActiveProductsWithPrice(empresaId: string): Promise<Array<{ id: string; nombre: string; unidad: string; precio: number }>> {
+export async function getActiveProductsWithPrice(
+  empresaId: string,
+  vendedorId: string
+): Promise<Array<{ id: string; nombre: string; unidad: string; precio: number; stockDisponible: number }>> {
   const { data: productsData, error: productsError } = await supabase
     .from('productos')
     .select('id, nombre, unidad')
@@ -556,12 +559,41 @@ export async function getActiveProductsWithPrice(empresaId: string): Promise<Arr
     if (!latestPriceByProduct.has(row.producto_id)) latestPriceByProduct.set(row.producto_id, row.precio);
   });
 
+  const { data: vendorInventoryData, error: vendorInventoryError } = await (supabase
+    .from('inventarios')
+    .select('producto_id, cantidad')
+    .eq('empresa_id', empresaId)
+    .eq('ubicacion_tipo', 'VENDEDOR')
+    .eq('ubicacion_id', vendedorId)
+    .in('producto_id', productIds) as any);
+  if (vendorInventoryError) throw vendorInventoryError;
+
+  const { data: warehouseInventoryData, error: warehouseInventoryError } = await (supabase
+    .from('inventarios')
+    .select('producto_id, cantidad')
+    .eq('empresa_id', empresaId)
+    .eq('ubicacion_tipo', 'ALMACEN')
+    .eq('ubicacion_id', empresaId)
+    .in('producto_id', productIds) as any);
+  if (warehouseInventoryError) throw warehouseInventoryError;
+
+  const vendorStockByProduct = new Map<string, number>();
+  ((vendorInventoryData ?? []) as Array<{ producto_id: string; cantidad: number }>).forEach((row) => {
+    vendorStockByProduct.set(row.producto_id, row.cantidad ?? 0);
+  });
+
+  const warehouseStockByProduct = new Map<string, number>();
+  ((warehouseInventoryData ?? []) as Array<{ producto_id: string; cantidad: number }>).forEach((row) => {
+    warehouseStockByProduct.set(row.producto_id, row.cantidad ?? 0);
+  });
+
   return products
     .map((item) => ({
       id: item.id,
       nombre: item.nombre,
       unidad: item.unidad,
       precio: latestPriceByProduct.get(item.id) ?? 0,
+      stockDisponible: vendorStockByProduct.get(item.id) ?? warehouseStockByProduct.get(item.id) ?? 0,
     }))
     .filter((item) => item.precio > 0);
 }

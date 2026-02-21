@@ -63,6 +63,15 @@ export default function ProtectedLayout() {
         }}
       />
       <Tabs.Screen
+        name="inventory"
+        options={{
+          title: 'Inventario',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'cube' : 'cube-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="incidences"
         options={{
           title: 'Incidencias',

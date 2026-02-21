@@ -22,11 +22,11 @@ export function useTodaySellerRouteQuery(empresaId: string | null, vendedorId: s
   });
 }
 
-export function useActiveProductsQuery(empresaId: string | null) {
+export function useActiveProductsQuery(empresaId: string | null, vendedorId: string | null) {
   return useQuery({
-    queryKey: ['seller-active-products', empresaId],
-    queryFn: () => getActiveProductsWithPrice(empresaId as string),
-    enabled: Boolean(empresaId),
+    queryKey: ['seller-active-products', empresaId, vendedorId],
+    queryFn: () => getActiveProductsWithPrice(empresaId as string, vendedorId as string),
+    enabled: Boolean(empresaId && vendedorId),
   });
 }
 
