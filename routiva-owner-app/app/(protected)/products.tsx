@@ -20,7 +20,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   useActivateProductMutation,
   useCreateProductMutation,
@@ -139,18 +138,14 @@ export default function ProductsScreen() {
             <View className="gap-1.5">
               <View className="flex-row items-center justify-between">
                 <Text variant="large">{product.nombre}</Text>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Pressable
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: product.activo ? '#10b981' : '#ef4444' }}
-                      accessibilityRole="button"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Text>{product.activo ? 'Producto activo' : 'Producto inactivo'}</Text>
-                  </TooltipContent>
-                </Tooltip>
+                <Text
+                  className={
+                    product.activo
+                      ? 'rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-800'
+                      : 'rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700'
+                  }>
+                  {product.activo ? 'ACTIVO' : 'INACTIVO'}
+                </Text>
               </View>
               <Text className="text-muted-foreground">Unidad: {product.unidad}</Text>
               <Text className="text-muted-foreground">

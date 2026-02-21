@@ -72,3 +72,12 @@ export async function activateClient(clientId: string): Promise<void> {
   const { error } = await clientesTable.update({ activo: true }).eq('id', clientId);
   if (error) throw error;
 }
+
+export async function deleteClientFull(empresaId: string, clientId: string): Promise<void> {
+  const { error } = await ((supabase as any).rpc('delete_client_full', {
+    p_empresa_id: empresaId,
+    p_client_id: clientId,
+  }) as any);
+
+  if (error) throw error;
+}

@@ -20,11 +20,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   useActivateClientMutation,
   useClientsQuery,
   useCreateClientMutation,
+  useDeleteClientMutation,
   useDeactivateClientMutation,
   useUpdateClientMutation,
 } from '@/features/clients/hooks/use-clients';
@@ -46,10 +46,12 @@ export default function ClientsScreen() {
   const updateClientMutation = useUpdateClientMutation(empresaId);
   const deactivateClientMutation = useDeactivateClientMutation(empresaId);
   const activateClientMutation = useActivateClientMutation(empresaId);
+  const deleteClientMutation = useDeleteClientMutation(empresaId);
 
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [editingClient, setEditingClient] = React.useState<ClientItem | null>(null);
   const [deactivatingClient, setDeactivatingClient] = React.useState<ClientItem | null>(null);
+  const [deletingClient, setDeletingClient] = React.useState<ClientItem | null>(null);
 
   const {
     control,
@@ -150,18 +152,14 @@ export default function ClientsScreen() {
             <View className="gap-1.5">
               <View className="flex-row items-center justify-between">
                 <Text variant="large">{client.nombreCompleto}</Text>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Pressable
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: client.activo ? '#10b981' : '#ef4444' }}
-                      accessibilityRole="button"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Text>{client.activo ? 'Cliente activo' : 'Cliente inactivo'}</Text>
-                  </TooltipContent>
-                </Tooltip>
+                <Text
+                  className={
+                    client.activo
+                      ? 'rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-800'
+                      : 'rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700'
+                  }>
+                  {client.activo ? 'ACTIVO' : 'INACTIVO'}
+                </Text>
               </View>
               <Text className="text-muted-foreground">Telefono: {client.telefono ?? 'Sin telefono'}</Text>
               <Text className="text-muted-foreground">RFC: {client.rfc ?? 'Sin RFC'}</Text>
@@ -197,6 +195,12 @@ export default function ClientsScreen() {
                   <Text>{activateClientMutation.isPending ? 'Activando...' : 'Activar'}</Text>
                 </Button>
               ) : null}
+              <Button
+                variant="outline"
+                onPress={() => setDeletingClient(client)}
+                disabled={deleteClientMutation.isPending}>
+                <Text>{deleteClientMutation.isPending ? 'Eliminando...' : 'Eliminar'}</Text>
+              </Button>
             </View>
           </View>
         ))}
@@ -302,6 +306,41 @@ export default function ClientsScreen() {
             <AlertDialogAction asChild>
               <Button onPress={confirmDeactivateClient} disabled={deactivateClientMutation.isPending}>
                 <Text>{deactivateClientMutation.isPending ? 'Desactivando...' : 'Desactivar'}</Text>
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={Boolean(deletingClient)} onOpenChange={(open) => !open && setDeletingClient(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar cliente</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deletingClient
+                ? `Se eliminara ${deletingClient.nombreCompleto} junto con puntos de venta, visitas, pedidos e incidencias relacionadas.`
+                : 'Esta accion elimina toda la informacion relacionada del cliente.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline">
+                <Text>Cancelar</Text>
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onPress={async () => {
+                  if (!deletingClient) return;
+                  try {
+                    await deleteClientMutation.mutateAsync(deletingClient.id);
+                  } finally {
+                    setDeletingClient(null);
+                  }
+                }}
+                disabled={deleteClientMutation.isPending}>
+                <Text>{deleteClientMutation.isPending ? 'Eliminando...' : 'Eliminar todo'}</Text>
               </Button>
             </AlertDialogAction>
           </AlertDialogFooter>

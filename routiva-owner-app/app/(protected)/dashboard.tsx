@@ -93,7 +93,7 @@ export default function DashboardScreen() {
             </View>
             <Text className="text-3xl font-extrabold text-foreground">{String(totalClients)}</Text>
             <Text className="mt-1 text-xs text-muted-foreground">
-              {activeClients} activos, {inactiveClients} inactivos
+              {inactiveClients} inactivos de {totalClients}
             </Text>
           </Pressable>
 

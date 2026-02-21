@@ -178,13 +178,9 @@ export default function VendorsScreen() {
 
         {(vendors ?? []).map((vendor) => (
           <View key={vendor.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-black/5 dark:border-zinc-800 dark:bg-zinc-900">
-            <View className="mb-2 flex-row items-start justify-between gap-3">
-              <View className="flex-1 gap-1">
-                <Text variant="large">{vendor.nombreCompleto}</Text>
-                <Text className="text-muted-foreground">Telefono: {vendor.telefono ?? 'Sin telefono'}</Text>
-                <Text className="text-muted-foreground">RFC: {vendor.rfc ?? 'Sin RFC'}</Text>
-                <Text className="text-muted-foreground">Ultima conexion: {formatDate(vendor.ultimaConexion)}</Text>
-              </View>
+            <View className="mb-2 gap-1">
+              <View className="flex-row items-center justify-between gap-3">
+                <Text variant="large" className="flex-1">{vendor.nombreCompleto}</Text>
               <Text
                 className={
                   vendor.status === 'ACTIVO'
@@ -193,6 +189,10 @@ export default function VendorsScreen() {
                 }>
                 {vendor.status}
               </Text>
+              </View>
+              <Text className="text-muted-foreground">Telefono: {vendor.telefono ?? 'Sin telefono'}</Text>
+              <Text className="text-muted-foreground">RFC: {vendor.rfc ?? 'Sin RFC'}</Text>
+              <Text className="text-muted-foreground">Ultima conexion: {formatDate(vendor.ultimaConexion)}</Text>
             </View>
 
             {vendor.ultimaUbicacionLat !== null && vendor.ultimaUbicacionLng !== null ? (
